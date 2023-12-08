@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -36,15 +37,15 @@ const useMonthsAndWeeks = (currentYear: number, timezone: string): MonthsAndWeek
 
   useEffect(() => {
     const today = dayjs().tz(timezone);
-    setCurrentDate(today.format('YYYY-MM-DD'));
+    setCurrentDate(today.format('YYYY-MM-DDTHH:mm:ss.SSSZ'));
 
     const monthsArray: MonthObject[] = Array.from({ length: 12 }, (_, index) => {
       const monthDate = dayjs().tz(timezone).year(currentYear).month(index).startOf('month');
       return {
         monthIndex: index,
         monthName: monthDate.format('MMMM'),
-        startDate: monthDate.format('YYYY-MM-DD'),
-        endDate: monthDate.endOf('month').format('YYYY-MM-DD'),
+        startDate: monthDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+        endDate: monthDate.endOf('month').format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
         timezone: timezone,
       };
     });
@@ -58,8 +59,8 @@ const useMonthsAndWeeks = (currentYear: number, timezone: string): MonthsAndWeek
       return {
         weekIndex: index,
         monthWeekIndex: monthWeekIndex,
-        startDate: weekStartDate.format('YYYY-MM-DD'),
-        endDate: weekEndDate.format('YYYY-MM-DD'),
+        startDate: weekStartDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+        endDate: weekEndDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
         timezone: timezone,
       };
     });
@@ -69,3 +70,5 @@ const useMonthsAndWeeks = (currentYear: number, timezone: string): MonthsAndWeek
 
   return { currentDate, monthsArray, weeksArray };
 };
+
+export default useMonthsAndWeeks;

@@ -81,7 +81,7 @@ const useMonthsAndWeeks = (year: number): MonthsAndWeeksResult => {
 
         return {
           weekIndex,
-          weekMonthIndex: weekStartDate.format('w'), // Week in order within the month
+          weekMonthIndex: weekStartDate.format('W'), // Week in order within the month (starting from 1)
           weekStartDate: weekStartDate.format('YYYY-MM-DDTHH:mm:ssXXX'),
           weekEndDate: weekEndDate.format('YYYY-MM-DDTHH:mm:ssXXX'),
           daysArray,

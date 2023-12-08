@@ -82,7 +82,8 @@ const useMonthsAndWeeks = (currentYear: number, timezone: string): MonthsAndWeek
     setWeeksArray(weeksArray);
   }, [currentYear, timezone]);
 
-  return { currentDate, monthsArray, weeksArray };
-};
+  return { currentDate, monthsArray, weeksArray}
+
+}
 
 export default useMonthsAndWeeks;

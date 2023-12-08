@@ -2,11 +2,9 @@ import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import weekOfYear from 'dayjs/plugin/week';
 import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(weekOfYear);
 dayjs.extend(utc);
-dayjs.extend(timezone);
 
 interface MonthObject {
   monthIndex: number;
@@ -22,84 +20,92 @@ interface DayObject {
 }
 
 interface WeekObject {
-  weekIndex: number;
-  weekOfMonth: number;
+  monthIndex: number;
+  weekMonthIndex: number;
   weekStartDate: string;
   weekEndDate: string;
   daysArray: DayObject[];
 }
 
 interface MonthsAndWeeksResult {
+  currentDate: string;
   monthsArray: MonthObject[];
   weeksArray: WeekObject[];
-  currentDate: string;
 }
 
-const useMonthsAndWeeks = (year: number): MonthsAndWeeksResult => {
+const useMonthsAndWeeks = (currentYear: number): MonthsAndWeeksResult => {
+  const [currentDate, setCurrentDate] = useState<string>('');
   const [monthsArray, setMonthsArray] = useState<MonthObject[]>([]);
   const [weeksArray, setWeeksArray] = useState<WeekObject[]>([]);
-  const [currentDate, setCurrentDate] = useState<string>('');
 
   useEffect(() => {
-    // Generate months array for the whole year
+    // Get current date
+    const today = dayjs().utc();
+    setCurrentDate(today.format('YYYY-MM-DD'));
+
+    // Generate months array
     const generateMonthsArray = () => {
-      const monthsArray = Array.from({ length: 12 }, (_, index) => {
-        const monthDate = dayjs().year(year).month(index).startOf('month');
+      const monthsArray: MonthObject[] = Array.from({ length: 12 }, (_, index) => {
+        const monthDate = dayjs().utc().year(currentYear).month(index).startOf('month');
         return {
           monthIndex: index,
           monthName: monthDate.format('MMMM'),
-          startDate: monthDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
-          endDate: monthDate.endOf('month').format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+          startDate: monthDate.format('YYYY-MM-DD'),
+          endDate: monthDate.endOf('month').format('YYYY-MM-DD'),
         };
       });
 
       setMonthsArray(monthsArray);
     };
 
-    // Generate weeks array for the whole year
+    // Generate weeks array with days
     const generateWeeksArray = () => {
-      const startOfYear = dayjs().year(year).startOf('year');
-      const endOfYear = dayjs().year(year).endOf('year');
+      const weeksArray: WeekObject[] = [];
 
-      const startOfWeek = startOfYear.startOf('week'); // Set to Monday
-      const endOfWeek = endOfYear.endOf('week'); // Set to Sunday
+      // Loop through each month
+      monthsArray.forEach((month) => {
+        const startOfWeek = dayjs(month.startDate).utc().startOf('isoWeek');
+        const endOfWeek = dayjs(month.endDate).utc().endOf('isoWeek');
 
-      const numberOfWeeks = endOfWeek.diff(startOfWeek, 'week') + 1;
+        let currentWeekStart = startOfWeek;
+        let weekMonthIndex = 0;
 
-      const weeksArray = Array.from({ length: numberOfWeeks }, (_, weekIndex) => {
-        const weekStartDate = startOfWeek.add(weekIndex, 'week');
-        const weekEndDate = weekStartDate.endOf('week');
+        // Loop through each week in the month
+        while (currentWeekStart.isBefore(endOfWeek) || currentWeekStart.isSame(endOfWeek, 'day')) {
+          const weekStartDate = currentWeekStart.startOf('isoWeek');
+          const weekEndDate = weekStartDate.endOf('isoWeek');
 
-        const daysArray = Array.from({ length: 7 }, (_, dayIndex) => {
-          const dayDate = weekStartDate.add(dayIndex, 'day');
-          return {
-            dayIndex,
-            dayName: dayDate.format('dddd'),
-            date: dayDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
-          };
-        });
+          const daysArray: DayObject[] = Array.from({ length: 7 }, (_, dayIndex) => {
+            const dayDate = weekStartDate.add(dayIndex, 'day');
+            return {
+              dayIndex,
+              dayName: dayDate.format('dddd'),
+              date: dayDate.format('YYYY-MM-DD'),
+            };
+          });
 
-        return {
-          weekIndex,
-          weekOfMonth: weekStartDate.date() > 1 ? weekStartDate.add(1, 'week').week() : weekStartDate.week(),
-          weekStartDate: weekStartDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
-          weekEndDate: weekEndDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
-          daysArray,
-        };
+          weeksArray.push({
+            monthIndex: month.monthIndex,
+            weekMonthIndex,
+            weekStartDate: weekStartDate.format('YYYY-MM-DD'),
+            weekEndDate: weekEndDate.format('YYYY-MM-DD'),
+            daysArray,
+          });
+
+          currentWeekStart = currentWeekStart.add(1, 'isoWeek');
+          weekMonthIndex++;
+        }
       });
 
       setWeeksArray(weeksArray);
     };
 
-    // Set current date
-    setCurrentDate(dayjs().format('YYYY-MM-DDTHH:mm:ss.SSSZ'));
-
     // Call the functions to generate arrays
     generateMonthsArray();
     generateWeeksArray();
-  }, [year]);
+  }, [currentYear]);
 
-  return { monthsArray, weeksArray, currentDate };
+  return { currentDate, monthsArray, weeksArray };
 };
 
 export default useMonthsAndWeeks;

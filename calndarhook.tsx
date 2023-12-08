@@ -1,89 +1,80 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 import isoWeek from 'dayjs/plugin/isoWeek';
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
 dayjs.extend(isoWeek);
 
 interface DayObject {
-  dayName: string;
-  date: string;
-}
-
-interface MonthObject {
-  monthIndex: number;
-  monthName: string;
-  startDate: string;
-  endDate: string;
-  timezone: string;
+  year: string;
+  week: number;
+  days: string[];
 }
 
 interface WeekObject {
-  weekIndex: number;
-  monthWeekIndex: number;
-  startDate: string;
-  endDate: string;
-  timezone: string;
-  days: DayObject[];
+  year: string;
+  week: number;
+  days: string[];
 }
 
-interface MonthsAndWeeksResult {
-  currentDate: string;
-  monthsArray: MonthObject[];
-  weeksArray: WeekObject[];
+interface MonthObject {
+  month: string;
+  weeks: WeekObject[];
 }
 
-const useMonthsAndWeeks = (currentYear: number, timezone: string): MonthsAndWeeksResult => {
-  const [currentDate, setCurrentDate] = useState<string>('');
-  const [monthsArray, setMonthsArray] = useState<MonthObject[]>([]);
-  const [weeksArray, setWeeksArray] = useState<WeekObject[]>([]);
+const useYearMonths = (year: number, timezone: string): MonthObject[] => {
+  const [yearMonths, setYearMonths] = useState<MonthObject[]>([]);
 
   useEffect(() => {
-    const today = dayjs().tz(timezone);
-    setCurrentDate(today.format('YYYY-MM-DDTHH:mm:ss.SSSZ'));
+    const generateYearMonths = () => {
+      const startOfYear = dayjs(`${year}-01-01`).tz(timezone);
+      const endOfYear = dayjs(`${year}-12-31`).tz(timezone);
 
-    const monthsArray: MonthObject[] = Array.from({ length: 12 }, (_, index) => {
-      const monthDate = dayjs().tz(timezone).year(currentYear).month(index).startOf('month');
-      return {
-        monthIndex: index,
-        monthName: monthDate.format('MMMM'),
-        startDate: monthDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
-        endDate: monthDate.endOf('month').format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
-        timezone: timezone,
-      };
-    });
+      let currentMonth = startOfYear.clone();
+      const months: MonthObject[] = [];
 
-    setMonthsArray(monthsArray);
-
-    const weeksArray: WeekObject[] = Array.from({ length: 52 }, (_, index) => {
-      const weekStartDate = dayjs().tz(timezone).year(currentYear).week(index).startOf('week');
-      const weekEndDate = weekStartDate.endOf('week');
-      const monthWeekIndex = weekStartDate.week() - weekStartDate.startOf('month').week() + 1;
-      const days = Array.from({ length: 7 }, (_, dayIndex) => {
-        const dayDate = weekStartDate.add(dayIndex, 'day');
-        return {
-          dayName: dayDate.format('dddd'),
-          date: dayDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+      while (currentMonth.isSameOrBefore(endOfYear, 'month')) {
+        const monthObj: MonthObject = {
+          month: currentMonth.format('MMMM'),
+          weeks: [],
         };
-      });
-      return {
-        weekIndex: index,
-        monthWeekIndex: monthWeekIndex,
-        startDate: weekStartDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
-        endDate: weekEndDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
-        timezone: timezone,
-        days: days,
-      };
-    });
 
-    setWeeksArray(weeksArray);
-  }, [currentYear, timezone]);
+        let currentWeek = currentMonth.startOf('month').isoWeekday(1);
+        const weeks: WeekObject[] = [];
 
-  return { currentDate, monthsArray, weeksArray}
+        while (currentWeek.isSameOrBefore(currentMonth.endOf('month'), 'week')) {
+          const weekObj: WeekObject = {
+            year: currentWeek.format('YYYY'),
+            week: currentWeek.isoWeek(),
+            days: [],
+          };
 
-}
+          let currentDay = currentWeek.clone();
+          const days: string[] = [];
 
-export default useMonthsAndWeeks;
+          for (let i = 0; i < 7; i++) {
+            days.push(currentDay.format('dddd'));
+            currentDay = currentDay.add(1, 'day');
+          }
+
+          weekObj.days = days;
+          weeks.push(weekObj);
+
+          currentWeek = currentWeek.add(1, 'week');
+        }
+
+        monthObj.weeks = weeks;
+        months.push(monthObj);
+
+        currentMonth = currentMonth.add(1, 'month');
+      }
+
+      setYearMonths(months);
+    };
+
+    generateYearMonths();
+  }, [year, timezone]);
+
+  return yearMonths;
+};
+
+export default useYearMonths;

@@ -8,6 +8,11 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(isoWeek);
 
+interface DayObject {
+  dayName: string;
+  date: string;
+}
+
 interface MonthObject {
   monthIndex: number;
   monthName: string;
@@ -22,6 +27,7 @@ interface WeekObject {
   startDate: string;
   endDate: string;
   timezone: string;
+  days: DayObject[];
 }
 
 interface MonthsAndWeeksResult {
@@ -56,12 +62,20 @@ const useMonthsAndWeeks = (currentYear: number, timezone: string): MonthsAndWeek
       const weekStartDate = dayjs().tz(timezone).year(currentYear).week(index).startOf('week');
       const weekEndDate = weekStartDate.endOf('week');
       const monthWeekIndex = weekStartDate.week() - weekStartDate.startOf('month').week() + 1;
+      const days = Array.from({ length: 7 }, (_, dayIndex) => {
+        const dayDate = weekStartDate.add(dayIndex, 'day');
+        return {
+          dayName: dayDate.format('dddd'),
+          date: dayDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+        };
+      });
       return {
         weekIndex: index,
         monthWeekIndex: monthWeekIndex,
         startDate: weekStartDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
         endDate: weekEndDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
         timezone: timezone,
+        days: days,
       };
     });
 

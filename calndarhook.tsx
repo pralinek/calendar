@@ -8,17 +8,23 @@ interface DayObject {
   year: string;
   week: number;
   days: string[];
+  startOfDay: string;
+  endOfDay: string;
 }
 
 interface WeekObject {
   year: string;
   week: number;
   days: string[];
+  startOfWeek: string;
+  endOfWeek: string;
 }
 
 interface MonthObject {
   month: string;
   weeks: WeekObject[];
+  startOfMonth: string;
+  endOfMonth: string;
 }
 
 const useYearMonths = (year: number, timezone: string): MonthObject[] => {
@@ -36,6 +42,8 @@ const useYearMonths = (year: number, timezone: string): MonthObject[] => {
         const monthObj: MonthObject = {
           month: currentMonth.format('MMMM'),
           weeks: [],
+          startOfMonth: currentMonth.startOf('month').format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+          endOfMonth: currentMonth.endOf('month').format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
         };
 
         let currentWeek = currentMonth.startOf('month').isoWeekday(1);
@@ -46,6 +54,8 @@ const useYearMonths = (year: number, timezone: string): MonthObject[] => {
             year: currentWeek.format('YYYY'),
             week: currentWeek.isoWeek(),
             days: [],
+            startOfWeek: currentWeek.startOf('isoWeek').format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+            endOfWeek: currentWeek.endOf('isoWeek').format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
           };
 
           let currentDay = currentWeek.clone();

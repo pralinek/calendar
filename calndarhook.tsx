@@ -23,7 +23,7 @@ interface DayObject {
 
 interface WeekObject {
   weekIndex: number;
-  weekMonthIndex: number;
+  weekOfMonth: number;
   weekStartDate: string;
   weekEndDate: string;
   daysArray: DayObject[];
@@ -48,8 +48,8 @@ const useMonthsAndWeeks = (year: number): MonthsAndWeeksResult => {
         return {
           monthIndex: index,
           monthName: monthDate.format('MMMM'),
-          startDate: monthDate.format('YYYY-MM-DDTHH:mm:ssXXX'),
-          endDate: monthDate.endOf('month').format('YYYY-MM-DDTHH:mm:ssXXX'),
+          startDate: monthDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+          endDate: monthDate.endOf('month').format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
         };
       });
 
@@ -75,15 +75,15 @@ const useMonthsAndWeeks = (year: number): MonthsAndWeeksResult => {
           return {
             dayIndex,
             dayName: dayDate.format('dddd'),
-            date: dayDate.format('YYYY-MM-DDTHH:mm:ssXXX'),
+            date: dayDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
           };
         });
 
         return {
           weekIndex,
-          weekMonthIndex: weekStartDate.format('W'), // Week in order within the month (starting from 1)
-          weekStartDate: weekStartDate.format('YYYY-MM-DDTHH:mm:ssXXX'),
-          weekEndDate: weekEndDate.format('YYYY-MM-DDTHH:mm:ssXXX'),
+          weekOfMonth: weekStartDate.date() > 1 ? weekStartDate.add(1, 'week').week() : weekStartDate.week(),
+          weekStartDate: weekStartDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+          weekEndDate: weekEndDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
           daysArray,
         };
       });
@@ -92,7 +92,7 @@ const useMonthsAndWeeks = (year: number): MonthsAndWeeksResult => {
     };
 
     // Set current date
-    setCurrentDate(dayjs().format('YYYY-MM-DDTHH:mm:ssXXX'));
+    setCurrentDate(dayjs().format('YYYY-MM-DDTHH:mm:ss.SSSZ'));
 
     // Call the functions to generate arrays
     generateMonthsArray();

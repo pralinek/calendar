@@ -64,16 +64,16 @@ const useMonthsAndWeeks = (currentYear: number): MonthsAndWeeksResult => {
 
       // Loop through each month
       monthsArray.forEach((month) => {
-        const startOfWeek = dayjs(month.startDate).utc().startOf('isoWeek');
-        const endOfWeek = dayjs(month.endDate).utc().endOf('isoWeek');
+        const startOfWeek = dayjs(month.startDate).utc().startOf('week');
+        const endOfWeek = dayjs(month.endDate).utc().endOf('week');
 
         let currentWeekStart = startOfWeek;
         let weekMonthIndex = 0;
 
         // Loop through each week in the month
         while (currentWeekStart.isBefore(endOfWeek) || currentWeekStart.isSame(endOfWeek, 'day')) {
-          const weekStartDate = currentWeekStart.startOf('isoWeek');
-          const weekEndDate = weekStartDate.endOf('isoWeek');
+          const weekStartDate = currentWeekStart.startOf('week');
+          const weekEndDate = weekStartDate.endOf('week');
 
           const daysArray: DayObject[] = Array.from({ length: 7 }, (_, dayIndex) => {
             const dayDate = weekStartDate.add(dayIndex, 'day');
@@ -92,7 +92,7 @@ const useMonthsAndWeeks = (currentYear: number): MonthsAndWeeksResult => {
             daysArray,
           });
 
-          currentWeekStart = currentWeekStart.add(1, 'isoWeek');
+          currentWeekStart = currentWeekStart.add(1, 'week');
           weekMonthIndex++;
         }
       });

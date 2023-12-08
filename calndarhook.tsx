@@ -45,7 +45,7 @@ const useMonthsAndWeeks = (currentYear: number, timezone: string): MonthsAndWeek
   const [weeksArray, setWeeksArray] = useState<WeekObject[]>([]);
 
   useEffect(() => {
-    // Get current date
+    // Get current date in the specified timezone
     const today = dayjs().tz(timezone);
     setCurrentDate(today.format('YYYY-MM-DD'));
 
@@ -126,7 +126,7 @@ const useMonthsAndWeeks = (currentYear: number, timezone: string): MonthsAndWeek
     // Call the functions to generate arrays
     generateMonthsArray();
     generateWeeksArray();
-  }, [currentYear, timezone]);
+  }, [currentYear, monthsArray, timezone]);
 
   return { currentDate, currentMonthObject, currentWeekObject, monthsArray, weeksArray };
 };

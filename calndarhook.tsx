@@ -8,21 +8,16 @@ dayjs.extend(weekOfYear);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const useMonthsAndWeeks = (selectedMonthObject) => {
+const useMonthsAndWeeks = (year) => {
   const [monthsArray, setMonthsArray] = useState([]);
   const [weeksArray, setWeeksArray] = useState([]);
   const [currentDate, setCurrentDate] = useState('');
 
   useEffect(() => {
-    if (!selectedMonthObject) return;
-
-    // Generate months array
+    // Generate months array for the whole year
     const generateMonthsArray = () => {
-      const { monthIndex, startDate, endDate } = selectedMonthObject;
-      const currentYear = dayjs(startDate).year();
-
       const monthsArray = Array.from({ length: 12 }, (_, index) => {
-        const monthDate = dayjs().year(currentYear).month(index).startOf('month');
+        const monthDate = dayjs().year(year).month(index).startOf('month');
         return {
           monthIndex: index,
           monthName: monthDate.format('MMMM'),
@@ -34,12 +29,13 @@ const useMonthsAndWeeks = (selectedMonthObject) => {
       setMonthsArray(monthsArray);
     };
 
-    // Generate weeks array
+    // Generate weeks array for the whole year
     const generateWeeksArray = () => {
-      const { startDate, endDate } = selectedMonthObject;
+      const startOfYear = dayjs().year(year).startOf('year');
+      const endOfYear = dayjs().year(year).endOf('year');
 
-      const startOfWeek = dayjs(startDate).startOf('week'); // Set to Monday
-      const endOfWeek = dayjs(endDate).endOf('week'); // Set to Sunday
+      const startOfWeek = startOfYear.startOf('week'); // Set to Monday
+      const endOfWeek = endOfYear.endOf('week'); // Set to Sunday
 
       const numberOfWeeks = endOfWeek.diff(startOfWeek, 'week') + 1;
 
@@ -73,7 +69,7 @@ const useMonthsAndWeeks = (selectedMonthObject) => {
     // Call the functions to generate arrays
     generateMonthsArray();
     generateWeeksArray();
-  }, [selectedMonthObject]);
+  }, [year]);
 
   return { monthsArray, weeksArray, currentDate };
 };

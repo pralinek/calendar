@@ -5,17 +5,16 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 dayjs.extend(isoWeek);
 
 interface DayObject {
-  year: string;
-  week: number;
-  days: string[];
-  startOfDay: string;
-  endOfDay: string;
+  dayIndex: number;
+  dayName: string;
+  startDate: string;
+  endDate: string;
 }
 
 interface WeekObject {
   year: string;
   week: number;
-  days: string[];
+  days: DayObject[];
   startOfWeek: string;
   endOfWeek: string;
 }
@@ -59,10 +58,17 @@ const useYearMonths = (year: number, timezone: string): MonthObject[] => {
           };
 
           let currentDay = currentWeek.clone();
-          const days: string[] = [];
+          const days: DayObject[] = [];
 
           for (let i = 0; i < 7; i++) {
-            days.push(currentDay.format('dddd'));
+            const dayObj: DayObject = {
+              dayIndex: i,
+              dayName: currentDay.format('dddd'),
+              startDate: currentDay.startOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+              endDate: currentDay.endOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+            };
+
+            days.push(dayObj);
             currentDay = currentDay.add(1, 'day');
           }
 

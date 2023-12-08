@@ -8,10 +8,37 @@ dayjs.extend(weekOfYear);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const useMonthsAndWeeks = (year) => {
-  const [monthsArray, setMonthsArray] = useState([]);
-  const [weeksArray, setWeeksArray] = useState([]);
-  const [currentDate, setCurrentDate] = useState('');
+interface MonthObject {
+  monthIndex: number;
+  monthName: string;
+  startDate: string;
+  endDate: string;
+}
+
+interface DayObject {
+  dayIndex: number;
+  dayName: string;
+  date: string;
+}
+
+interface WeekObject {
+  weekIndex: number;
+  weekMonthIndex: number;
+  weekStartDate: string;
+  weekEndDate: string;
+  daysArray: DayObject[];
+}
+
+interface MonthsAndWeeksResult {
+  monthsArray: MonthObject[];
+  weeksArray: WeekObject[];
+  currentDate: string;
+}
+
+const useMonthsAndWeeks = (year: number): MonthsAndWeeksResult => {
+  const [monthsArray, setMonthsArray] = useState<MonthObject[]>([]);
+  const [weeksArray, setWeeksArray] = useState<WeekObject[]>([]);
+  const [currentDate, setCurrentDate] = useState<string>('');
 
   useEffect(() => {
     // Generate months array for the whole year
@@ -54,6 +81,7 @@ const useMonthsAndWeeks = (year) => {
 
         return {
           weekIndex,
+          weekMonthIndex: weekStartDate.format('w'), // Week in order within the month
           weekStartDate: weekStartDate.format('YYYY-MM-DDTHH:mm:ssXXX'),
           weekEndDate: weekEndDate.format('YYYY-MM-DDTHH:mm:ssXXX'),
           daysArray,

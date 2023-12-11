@@ -1,0 +1,22 @@
+Sub SendJsonPostRequest()
+    Dim xmlhttp As Object
+    Set xmlhttp = CreateObject("MSXML2.ServerXMLHTTP")
+
+    ' Define API endpoint
+    Dim apiEndpoint As String
+    apiEndpoint = "https://api.example.com/endpoint"
+
+    ' Create JSON payload (replace this with your actual JSON creation logic)
+    Dim jsonString As String
+    jsonString = "{""key"": ""value"", ""anotherKey"": ""anotherValue""}"
+
+    ' Open the connection to the API
+    xmlhttp.Open "POST", apiEndpoint, False
+    xmlhttp.setRequestHeader "Content-Type", "application/json"
+
+    ' Send the JSON payload in the request body
+    xmlhttp.send jsonString
+
+    ' Display the response (you might want to handle the response differently)
+    MsgBox xmlhttp.responseText
+End Sub

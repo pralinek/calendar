@@ -1,12 +1,23 @@
-import React from 'react';
+import React, { MouseEvent, useState } from 'react';
 import { Button, Menu, MenuItem, IconButton } from '@material-ui/core';
 import { ArrowBack, ArrowForward } from '@material-ui/icons';
 
-export default function HorizontalSelect() {
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [selectedIndex, setSelectedIndex] = React.useState(1);
+interface OptionItem {
+  value: string;
+  label: string;
+}
 
-  const handleClick = (event) => {
+const options: OptionItem[] = [
+  { value: '1', label: 'Option 1' },
+  { value: '2', label: 'Option 2' },
+  { value: '3', label: 'Option 3' },
+]; // Add your options here
+
+export default function HorizontalSelect() {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number>(1);
+
+  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -14,14 +25,12 @@ export default function HorizontalSelect() {
     setAnchorEl(null);
   };
 
-  const handleMenuItemClick = (event, index) => {
+  const handleMenuItemClick = (event: MouseEvent<HTMLElement>, index: number) => {
     setSelectedIndex(index);
     setAnchorEl(null);
   };
 
-  const options = ['Option 1', 'Option 2', 'Option 3']; // Add your options here
-
-  const handleArrowClick = (direction) => {
+  const handleArrowClick = (direction: 'left' | 'right') => {
     if (direction === 'left' && selectedIndex > 0) {
       setSelectedIndex(selectedIndex - 1);
     } else if (direction === 'right' && selectedIndex < options.length - 1) {
@@ -35,7 +44,7 @@ export default function HorizontalSelect() {
         <ArrowBack />
       </IconButton>
       <Button aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
-        {options[selectedIndex]}
+        {options[selectedIndex].label}
       </Button>
       <Menu
         id="simple-menu"
@@ -46,11 +55,11 @@ export default function HorizontalSelect() {
       >
         {options.map((option, index) => (
           <MenuItem
-            key={option}
+            key={option.value}
             selected={index === selectedIndex}
             onClick={(event) => handleMenuItemClick(event, index)}
           >
-            {option}
+            {option.label}
           </MenuItem>
         ))}
       </Menu>

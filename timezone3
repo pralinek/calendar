@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Rnd } from 'react-rnd';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { TextField, Button, Icon } from '@material-ui/core';
+import { TextField, Button } from '@material-ui/core';
 import { AccessTime, Work, Home, School } from '@material-ui/icons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -35,16 +35,55 @@ const Schedule: React.FC<ScheduleProps> = ({ timezone }) => {
     const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
 
     const onAddShift: SubmitHandler<FormData> = data => {
-        // Existing logic for adding a shift
+        const newShift: Shift = {
+            id: shifts.length,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            position: { x: calculateXPosition(data.startTime), y: 0 },
+            size: { width: calculateWidth(data.startTime, data.endTime), height: 50 },
+            color: getRandomColor(),
+            icon: getRandomIcon()
+        };
+        setShifts([...shifts, newShift]);
     };
 
-    // Existing logic for calculateWidth, getRandomColor, getRandomIcon
+    const calculateWidth = (startTime: string, endTime: string): number => {
+        const start = dayjs(startTime);
+        const end = dayjs(endTime);
+        const diff = end.diff(start, 'minute');
+        return diff / 1440 * 100; // Percentage of the day
+    };
+
+    const calculateXPosition = (startTime: string): number => {
+        const startOfDay = dayjs(startTime).startOf('day');
+        const start = dayjs(startTime);
+        const diff = start.diff(startOfDay, 'minute');
+        return diff / 1440 * 100; // Percentage of the day
+    };
+
+    const calculateXPositionBasedOnDrag = (xPosition: number): number => {
+        return xPosition / window.innerWidth * 100;
+    };
+
+    const calculateWidthBasedOnResize = (width: string): number => {
+        const pixelWidth = parseFloat(width.replace('px', ''));
+        return pixelWidth / window.innerWidth * 100;
+    };
 
     const updateShift = (id: number, size: { width: number; height: number }, position: { x: number; y: number }) => {
-        // Update the shift's position and size based on drag or resize
         setShifts(shifts.map(shift => 
             shift.id === id ? { ...shift, size, position } : shift
         ));
+    };
+
+    const getRandomColor = () => {
+        const colors = ['#FFCDD2', '#C8E6C9', '#BBDEFB', '#D1C4E9'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    };
+
+    const getRandomIcon = () => {
+        const icons = [<AccessTime />, <Work />, <Home />, <School />];
+        return icons[Math.floor(Math.random() * icons.length)];
     };
 
     return (
@@ -70,10 +109,6 @@ const Schedule: React.FC<ScheduleProps> = ({ timezone }) => {
                     <span>Shift: {shift.id}</span>
                 </Rnd>
             ))}
+            <div>
 
-            {/* Form for adding shifts */}
-        </div>
-    );
-};
-
-export default Schedule;
+           

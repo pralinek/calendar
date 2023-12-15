@@ -1,17 +1,24 @@
 import React, { useState } from 'react';
 import { Rnd } from 'react-rnd';
 
-const initialBoxes = [
+interface Box {
+    id: number;
+    width: number;
+    x: number;
+    color: string;
+}
+
+const initialBoxes: Box[] = [
     { id: 1, width: 100, x: 0, color: 'lightblue' },
     { id: 2, width: 150, x: 100, color: 'lightgreen' },
     { id: 3, width: 200, x: 250, color: 'lightcoral' },
 ];
 
-const ResizableBox = () => {
+const ResizableBox: React.FC = () => {
     const containerHeight = 200; // Height of the container
-    const [boxes, setBoxes] = useState(initialBoxes);
+    const [boxes, setBoxes] = useState<Box[]>(initialBoxes);
 
-    const updateBox = (id, newX, newWidth) => {
+    const updateBox = (id: number, newX: number, newWidth: number) => {
         setBoxes(currentBoxes =>
             currentBoxes.map(box => 
                 box.id === id ? { ...box, x: newX, width: newWidth } : box
@@ -19,9 +26,11 @@ const ResizableBox = () => {
         );
     };
 
-    const onDragStop = (id, d) => {
+    const onDragStop = (id: number, d: any) => {
         const currentBox = boxes.find(box => box.id === id);
-        let newX = d.x;
+        if (!currentBox) return;
+
+        let newX = Math.round(d.x / 20) * 20; // Adjusting to nearest 20px grid
 
         // Adjust if overlapping after drag
         boxes.forEach(otherBox => {
@@ -39,8 +48,10 @@ const ResizableBox = () => {
         updateBox(id, newX, currentBox.width);
     };
 
-    const onResizeStop = (id, ref, position, delta) => {
+    const onResizeStop = (id: number, ref: any, position: any, delta: any) => {
         const currentBox = boxes.find(box => box.id === id);
+        if (!currentBox) return;
+
         let newWidth = ref.offsetWidth;
 
         // Adjust if overlapping after resize

@@ -30,21 +30,20 @@ const ResizableBox: React.FC = () => {
         const currentBox = boxes.find(box => box.id === id);
         if (!currentBox) return;
 
-        let newX = Math.round(d.x / 20) * 20; // Adjusting to nearest 20px grid
+        let newX = Math.round(d.x / 20) * 20; // Snap to 20px grid
 
-        // Sort boxes by their X position to check for overlap correctly
-        const sortedBoxes = [...boxes].sort((a, b) => a.x - b.x);
-        const currentIndex = sortedBoxes.findIndex(box => box.id === id);
+        // Prevent moving box outside the container
+        newX = Math.max(0, newX);
+        newX = Math.min(newX, window.innerWidth - currentBox.width);
 
-        // Check for overlap with previous box
-        if (currentIndex > 0) {
-            const prevBox = sortedBoxes[currentIndex - 1];
-            newX = Math.max(newX, prevBox.x + prevBox.width);
+        // Maintain the box order
+        const index = boxes.findIndex(box => box.id === id);
+        if (index > 0) {
+            const previousBox = boxes[index - 1];
+            newX = Math.max(newX, previousBox.x + previousBox.width);
         }
-
-        // Check for overlap with next box
-        if (currentIndex < sortedBoxes.length - 1) {
-            const nextBox = sortedBoxes[currentIndex + 1];
+        if (index < boxes.length - 1) {
+            const nextBox = boxes[index + 1];
             newX = Math.min(newX, nextBox.x - currentBox.width);
         }
 
@@ -57,13 +56,13 @@ const ResizableBox: React.FC = () => {
 
         let newWidth = ref.offsetWidth;
 
-        // Sort boxes by their X position to check for overlap correctly
-        const sortedBoxes = [...boxes].sort((a, b) => a.x - b.x);
-        const currentIndex = sortedBoxes.findIndex(box => box.id === id);
+        // Prevent resizing box outside the container
+        newWidth = Math.min(newWidth, window.innerWidth - currentBox.x);
 
-        // Check for overlap with next box
-        if (currentIndex < sortedBoxes.length - 1) {
-            const nextBox = sortedBoxes[currentIndex + 1];
+        // Maintain the box order
+        const index = boxes.findIndex(box => box.id === id);
+        if (index < boxes.length - 1) {
+            const nextBox = boxes[index + 1];
             newWidth = Math.min(newWidth, nextBox.x - currentBox.x);
         }
 

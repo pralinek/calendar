@@ -1,0 +1,129 @@
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Extend dayjs with plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+interface Shift {
+    id: number;
+    startTime: string; // ISO string format
+    endTime: string; // ISO string format
+    timezone: string;
+    position: { x: number; y: number };
+    size: { width: number; height: number };
+    color: string;
+    icon: React.ReactElement;
+}
+
+import React, { useState } from 'react';
+import { Rnd } from 'react-rnd';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { TextField, Button, Icon } from '@material-ui/core';
+import { AccessTime, Work, Home, School } from '@material-ui/icons';
+
+const Schedule: React.FC = () => {
+    const [shifts, setShifts] = useState<Shift[]>([]);
+    const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
+
+    const onAddShift: SubmitHandler<FormData> = data => {
+        const startTime = dayjs(data.startTime).tz(data.timezone).format('YYYY-MM-DDTHH:mm:ss.SSSZ');
+        const endTime = dayjs(data.endTime).tz(data.timezone).format('YYYY-MM-DDTHH:mm:ss.SSSZ');
+        const newShift: Shift = {
+            id: shifts.length,
+            startTime,
+            endTime,
+            timezone: data.timezone,
+            position: { x: 0, y: 0 },
+            size: { width: 200, height: calculateHeight(startTime, endTime) },
+            color: getRandomColor(),
+            icon: getRandomIcon()
+        };
+        setShifts([...shifts, newShift]);
+    };
+
+    const calculateHeight = (startTime: string, endTime: string): number => {
+        const diff = dayjs(endTime).diff(dayjs(startTime), 'hour');
+        return diff * 50; // Example: 50px per hour
+    };
+
+    const getRandomColor = () => {
+        const colors = ['#FFCDD2', '#C8E6C9', '#BBDEFB', '#D1C4E9'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    };
+
+    const getRandomIcon = () => {
+        const icons = [<AccessTime />, <Work />, <Home />, <School />];
+        return icons[Math.floor(Math.random() * icons.length)];
+    };
+
+    // ... (Rest of the component)
+
+    return (
+        <div>
+            <form onSubmit={handleSubmit(onAddShift)}>
+                <TextField {...register("startTime")} type="datetime-local" label="Start Time" />
+                <TextField {...register("endTime")} type="datetime-local" label="End Time" />
+                <TextField {...register("timezone")} label="Time Zone" />
+                <Button type="submit" variant="contained" color="primary">Add Shift</Button>
+            </form>
+            <div>
+                {shifts.map((shift) => (
+                    <Rnd
+                        key={shift.id}
+                        size={{ width: shift.size.width, height: shift.size.height }}
+                        position={{ x: shift.position.x, y: shift.position.y }}
+                        style={{ backgroundColor: shift.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        <Icon>{shift.icon}</Icon>
+                        <span>Shift: {shift.id}</span>
+                    </Rnd>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+export default Schedule;
+
+
+interface Shift {
+    id: number;
+    startTime: string; // ISO string format
+    endTime: string; // ISO string format
+    position: { x: number; y: number };
+    size: { width: number; height: number };
+    color: string;
+    icon: React.ReactElement;
+}
+
+interface ScheduleProps {
+    timezone: string; // Prop for timezone
+}
+
+const Schedule: React.FC<ScheduleProps> = ({ timezone }) => {
+    const [shifts, setShifts] = useState<Shift[]>([]);
+    const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
+
+    const onAddShift: SubmitHandler<FormData> = data => {
+        const startTime = dayjs(data.startTime).tz(timezone).format('YYYY-MM-DDTHH:mm:ss.SSSZ');
+        const endTime = dayjs(data.endTime).tz(timezone).format('YYYY-MM-DDTHH:mm:ss.SSSZ');
+        const newShift: Shift = {
+            id: shifts.length,
+            startTime,
+            endTime,
+            position: { x: 0, y: 0 },
+            size: { width: 200, height: calculateHeight(startTime, endTime) },
+            color: getRandomColor(),
+            icon: getRandomIcon()
+        };
+        setShifts([...shifts, newShift]);
+    };
+
+    // ... (Rest of the component remains the same)
+
+    return (
+        // ... (JSX remains the same)
+    );
+};

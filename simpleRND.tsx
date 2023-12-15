@@ -32,18 +32,21 @@ const ResizableBox: React.FC = () => {
 
         let newX = Math.round(d.x / 20) * 20; // Adjusting to nearest 20px grid
 
-        // Adjust if overlapping after drag
-        boxes.forEach(otherBox => {
-            if (otherBox.id !== id) {
-                if (newX < otherBox.x + otherBox.width && newX + currentBox.width > otherBox.x) {
-                    if (otherBox.x + otherBox.width - newX < newX + currentBox.width - otherBox.x) {
-                        newX = otherBox.x + otherBox.width; // Adjust to the right
-                    } else {
-                        newX = otherBox.x - currentBox.width; // Adjust to the left
-                    }
-                }
-            }
-        });
+        // Sort boxes by their X position to check for overlap correctly
+        const sortedBoxes = [...boxes].sort((a, b) => a.x - b.x);
+        const currentIndex = sortedBoxes.findIndex(box => box.id === id);
+
+        // Check for overlap with previous box
+        if (currentIndex > 0) {
+            const prevBox = sortedBoxes[currentIndex - 1];
+            newX = Math.max(newX, prevBox.x + prevBox.width);
+        }
+
+        // Check for overlap with next box
+        if (currentIndex < sortedBoxes.length - 1) {
+            const nextBox = sortedBoxes[currentIndex + 1];
+            newX = Math.min(newX, nextBox.x - currentBox.width);
+        }
 
         updateBox(id, newX, currentBox.width);
     };
@@ -54,14 +57,15 @@ const ResizableBox: React.FC = () => {
 
         let newWidth = ref.offsetWidth;
 
-        // Adjust if overlapping after resize
-        boxes.forEach(otherBox => {
-            if (otherBox.id !== id) {
-                if (currentBox.x + newWidth > otherBox.x && currentBox.x < otherBox.x) {
-                    newWidth = otherBox.x - currentBox.x; // Resize to avoid overlap
-                }
-            }
-        });
+        // Sort boxes by their X position to check for overlap correctly
+        const sortedBoxes = [...boxes].sort((a, b) => a.x - b.x);
+        const currentIndex = sortedBoxes.findIndex(box => box.id === id);
+
+        // Check for overlap with next box
+        if (currentIndex < sortedBoxes.length - 1) {
+            const nextBox = sortedBoxes[currentIndex + 1];
+            newWidth = Math.min(newWidth, nextBox.x - currentBox.x);
+        }
 
         updateBox(id, currentBox.x, newWidth);
     };

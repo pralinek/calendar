@@ -1,0 +1,79 @@
+import React, { useState } from 'react';
+import { Rnd } from 'react-rnd';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { TextField, Button, Icon } from '@material-ui/core';
+import { AccessTime, Work, Home, School } from '@material-ui/icons';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Extend dayjs with plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+interface Shift {
+    id: number;
+    startTime: string;
+    endTime: string;
+    position: { x: number; y: number };
+    size: { width: number; height: number };
+    color: string;
+    icon: React.ReactElement;
+}
+
+interface FormData {
+    startTime: string;
+    endTime: string;
+}
+
+interface ScheduleProps {
+    timezone: string;
+}
+
+const Schedule: React.FC<ScheduleProps> = ({ timezone }) => {
+    const [shifts, setShifts] = useState<Shift[]>([]);
+    const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
+
+    const onAddShift: SubmitHandler<FormData> = data => {
+        // Existing logic for adding a shift
+    };
+
+    // Existing logic for calculateWidth, getRandomColor, getRandomIcon
+
+    const updateShift = (id: number, size: { width: number; height: number }, position: { x: number; y: number }) => {
+        // Update the shift's position and size based on drag or resize
+        setShifts(shifts.map(shift => 
+            shift.id === id ? { ...shift, size, position } : shift
+        ));
+    };
+
+    return (
+        <div style={{ position: 'relative', height: '100px', width: '100%', border: '1px solid black' }}>
+            {/* Hourly and 15-Minute Lines here */}
+            
+            {shifts.map((shift, index) => (
+                <Rnd
+                    key={index}
+                    size={{ width: `${shift.size.width}%`, height: 50 }}
+                    position={{ x: `${shift.position.x}%`, y: 0 }}
+                    onDragStop={(e, d) => {
+                        const updatedPosition = calculateXPositionBasedOnDrag(d.x);
+                        updateShift(shift.id, shift.size, { x: updatedPosition, y: 0 });
+                    }}
+                    onResizeStop={(e, direction, ref, delta, position) => {
+                        const updatedWidth = calculateWidthBasedOnResize(ref.style.width);
+                        updateShift(shift.id, { width: updatedWidth, height: 50 }, shift.position);
+                    }}
+                    style={{ backgroundColor: shift.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                    {shift.icon}
+                    <span>Shift: {shift.id}</span>
+                </Rnd>
+            ))}
+
+            {/* Form for adding shifts */}
+        </div>
+    );
+};
+
+export default Schedule;

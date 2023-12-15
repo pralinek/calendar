@@ -20,40 +20,38 @@ const ResizableBox = () => {
     };
 
     const onDragStop = (id, d) => {
-        // Find the current box and its neighbors
         const currentBox = boxes.find(box => box.id === id);
-        const leftNeighbor = boxes.find(box => box.x + box.width === currentBox.x);
-        const rightNeighbor = boxes.find(box => currentBox.x + currentBox.width === box.x);
-
-        // Calculate new position
         let newX = d.x;
 
-        // Prevent overlap with neighbors
-        if (leftNeighbor) {
-            newX = Math.max(newX, leftNeighbor.x + leftNeighbor.width);
-        }
-        if (rightNeighbor) {
-            newX = Math.min(newX, rightNeighbor.x - currentBox.width);
-        }
+        // Adjust if overlapping after drag
+        boxes.forEach(otherBox => {
+            if (otherBox.id !== id) {
+                if (newX < otherBox.x + otherBox.width && newX + currentBox.width > otherBox.x) {
+                    if (otherBox.x + otherBox.width - newX < newX + currentBox.width - otherBox.x) {
+                        newX = otherBox.x + otherBox.width; // Adjust to the right
+                    } else {
+                        newX = otherBox.x - currentBox.width; // Adjust to the left
+                    }
+                }
+            }
+        });
 
-        // Update the box position
         updateBox(id, newX, currentBox.width);
     };
 
     const onResizeStop = (id, ref, position, delta) => {
-        // Find the current box and its right neighbor
         const currentBox = boxes.find(box => box.id === id);
-        const rightNeighbor = boxes.find(box => currentBox.x + currentBox.width + delta.width <= box.x);
-
-        // Calculate new width
         let newWidth = ref.offsetWidth;
 
-        // Prevent overlap with the right neighbor
-        if (rightNeighbor) {
-            newWidth = Math.min(newWidth, rightNeighbor.x - currentBox.x);
-        }
+        // Adjust if overlapping after resize
+        boxes.forEach(otherBox => {
+            if (otherBox.id !== id) {
+                if (currentBox.x + newWidth > otherBox.x && currentBox.x < otherBox.x) {
+                    newWidth = otherBox.x - currentBox.x; // Resize to avoid overlap
+                }
+            }
+        });
 
-        // Update the box size
         updateBox(id, currentBox.x, newWidth);
     };
 
